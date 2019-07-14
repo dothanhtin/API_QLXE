@@ -15,5 +15,6 @@ namespace API_QLXE.Models
         public DbSet<Hanhtrinh> Hanhtrinhs { get; set; }
         public DbSet<DmLoaiHanhtrinh> DmLoaiHanhtrinhs { get; set; }
         public DbSet<DmTrangthaiHt> DmTrangthaiHts { get; set; }
+        public DbSet<NguoiDung> NguoiDungs { get; set; }
     }
 }

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -16,7 +18,10 @@ namespace API_QLXE.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "X-My-Header")]
     public class ProcessQLXEController: ApiController
     {
+        //connection string
         public string connstring = ConfigurationManager.ConnectionStrings["QLXE"].ConnectionString;
+
+        #region CRUD Journey
         [HttpGet]
         public IHttpActionResult getAllJourney()
         {
@@ -163,6 +168,33 @@ namespace API_QLXE.Controllers
                 throw ex;
             }
         }
+        #endregion
+
+        #region Manage users
+        [HttpPost]
+        public IHttpActionResult userLogin(object obj)
+        {
+            string jsonStr = JsonConvert.SerializeObject(obj);
+            var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
+            string username = p.username;
+            string password_md5 = p.password_md5;
+            var res = checklogin(username, password_md5);
+            return Json(res);
+        }
+
+        [HttpPost]
+        public IHttpActionResult changePassword(object obj)
+        {
+            string jsonStr = JsonConvert.SerializeObject(obj);
+            var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
+            string username = p.username;
+            string newpass_md5 = p.newpass_md5;
+            int res = changePassProc(username, newpass_md5);
+            return Json(res);
+        }
+        #endregion
+
+        #region called function
         public void CrudJourneyOrcl(int optTC,int idht,DateTime? tgdk,DateTime? tgdi,DateTime? tgve,string mucdich,string noidi,string noiden,string tgxp,int songuoi)
         {
             try
@@ -190,5 +222,118 @@ namespace API_QLXE.Controllers
                 throw ex;
             }
         }
+
+        public object checklogin(string username,string password_md5)
+        {
+            QLXEContext cn = new QLXEContext();
+            List<UserInfoModel> userInfoModels = new List<UserInfoModel>();
+            try
+            {
+                //check stage 1
+                string check_md5_userpass_input = MD5(username + password_md5);
+                var userinfo = cn.NguoiDungs.Where(s => s.USERNAME == username).ToList().FirstOrDefault();
+                if (userinfo != null)
+                {
+                    string check_md5_userpass_sys = MD5(userinfo.USERNAME + userinfo.PASS);
+                    if (check_md5_userpass_sys == check_md5_userpass_input)
+                    {
+                        //return user info
+                        DataTable dt = Loginchecktaoss(username, password_md5);
+                        userInfoModels = (from DataRow row in dt.Rows
+                                          select new UserInfoModel
+                                          {
+                                              USERNAME= row["USERNAME"].ToString(),
+                                              PASS=row["PASS"].ToString(),
+                                              PASSFINAL = row["PASSFINAL"].ToString(),
+                                              NHANVIEN_ID = row["NHANVIEN_ID"].ToString(),
+                                              NGAY_LOGIN = (DateTime)row["NGAY_LOGIN"],
+                                              TRANG_THAI = int.Parse(row["TRANG_THAI"].ToString()),
+                                              GHI_CHU = row["GHI_CHU"].ToString(),
+                                              CREATE_DATE = (DateTime)row["CREATE_DATE"],
+                                              TEN_NV = row["TEN_NV"].ToString(),
+                                              SDT_LH = row["SDT_LH"].ToString(),
+                                              DONVI_ID = int.Parse(row["DONVI_ID"].ToString()),
+                                              DONVI_CHA_ID = int.Parse(row["DONVI_CHA_ID"].ToString()),
+                                              TEN_DV_CHA = row["TEN_DV_CHA"].ToString()
+                                          }).ToList();
+                        return new { code = 1, data = userInfoModels };
+                    }
+                    return new { code = 0, data = userInfoModels };
+                }
+                return new { code = -1, data = userInfoModels };
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public DataTable Loginchecktaoss(string username,string password_md5)
+        {
+            using (OracleConnection cn = new OracleConnection(connstring))
+            {
+                OracleCommand cmd = new OracleCommand("QUANTRIHETHONG.LOGINCHECKTAOSS", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("user", OracleDbType.Varchar2).Value = username;
+                cmd.Parameters.Add("passdn", OracleDbType.Varchar2).Value = password_md5;
+                cmd.Parameters.Add("Param1", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+                OracleDataAdapter da = new OracleDataAdapter(cmd);
+                DataTable d = new DataTable();
+                da.Fill(d);
+                return d;
+            }
+        }
+        public int changePassProc(string username,string newpass_md5)
+        {
+            try
+            {
+                using (OracleConnection cn = new OracleConnection(connstring))
+                {
+                    OracleCommand cmd = new OracleCommand("quantringuoidung.Changepass", cn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("v_user", OracleDbType.Varchar2).Value = username;
+                    cmd.Parameters.Add("passnew", OracleDbType.Varchar2).Value = newpass_md5;
+                    cn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+                return 1;
+            }
+            catch(Exception ex)
+            {
+                return 0;
+                throw ex;
+            }
+        }
+        public static string tokenGenerator()
+        {
+            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 20);
+        }
+
+        public static string CalculateMD5Hash(string input)
+        {
+            // step 1, calculate MD5 hash from input
+            MD5 md5 = System.Security.Cryptography.MD5.Create();
+            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            byte[] hash = md5.ComputeHash(inputBytes);
+            // step 2, convert byte array to hex string
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hash.Length; i++)
+            {
+                sb.Append(hash[i].ToString("X2"));
+            }
+            return sb.ToString().ToUpper();
+        }
+
+        public static string MD5(string str)
+        {
+            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
+            byte[] bHash = md5.ComputeHash(Encoding.UTF8.GetBytes(str));
+            StringBuilder sbHash = new StringBuilder();
+            foreach (byte b in bHash)
+            {
+                sbHash.Append(String.Format("{0:x2}", b));
+            }
+            return sbHash.ToString();
+        }
+        #endregion
     }
 }
