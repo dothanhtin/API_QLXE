@@ -209,3 +209,6 @@ E:\SampleCode\API_QL_XE_github\API_QLXE\API_QLXE\obj\Debug\API_QLXE.csproj.CoreC
 E:\SampleCode\API_QL_XE_github\API_QLXE\API_QLXE\obj\Debug\API_QLXE.csproj.CopyComplete
 E:\SampleCode\API_QL_XE_github\API_QLXE\API_QLXE\obj\Debug\API_QLXE.dll
 E:\SampleCode\API_QL_XE_github\API_QLXE\API_QLXE\obj\Debug\API_QLXE.pdb
+E:\SampleCode\API_QL_XE_github\API_QLXE\API_QLXE\bin\NLog.dll
+E:\SampleCode\API_QL_XE_github\API_QLXE\API_QLXE\bin\NLog.xml
+E:\SampleCode\API_QL_XE_github\API_QLXE\API_QLXE\bin\NLog.config

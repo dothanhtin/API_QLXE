@@ -192,6 +192,55 @@ namespace API_QLXE.Controllers
             int res = changePassProc(username, newpass_md5);
             return Json(res);
         }
+
+        [HttpPost]
+        public IHttpActionResult sendOTP(object obj)
+        {
+            QLXEContext cn = new QLXEContext();
+            string jsonStr = JsonConvert.SerializeObject(obj);
+            var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
+            string phonenumber = p.phonenumber;
+            try
+            {
+                //Tạo mã
+                string OTPCode = GetRandomString(6);
+                //Lưu
+                Otp otp = new Otp();
+                otp.OTP_CODE = OTPCode;
+                otp.PHONE_NUMBER = phonenumber;
+                otp.CREATEDTIME = DateTime.Now;
+                cn.Otps.Add(otp);
+                cn.SaveChanges();
+                //Gửi SMS
+                string message = String.Format("Ma OTP xac thuc tai khoan dang nhap {0} cua quy khach vao he thong QLXE la:{1}. Ma co hieu luc trong vong 5 phut.",phonenumber, OTPCode);
+                string res = send_sms(phonenumber,OTPCode);
+                return Json(res); 
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        [HttpPost]
+        public IHttpActionResult validateOTP(object obj)
+        {
+            QLXEContext cn = new QLXEContext();
+            try
+            {
+                string jsonStr = JsonConvert.SerializeObject(obj);
+                var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
+                string number = p.number;
+                string otpcode = p.otpcode;
+                var res = cn.Otps.AsQueryable().Where(s => s.OTP_CODE == otpcode && s.PHONE_NUMBER == number).FirstOrDefault();
+                if (res != null)
+                    return Json(1);
+                return Json(0);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
         #endregion
 
         #region called function
@@ -333,6 +382,26 @@ namespace API_QLXE.Controllers
                 sbHash.Append(String.Format("{0:x2}", b));
             }
             return sbHash.ToString();
+        }
+
+        private string send_sms(string sdt, string noidung)
+        {
+            WsSendSmsDemo.AuthHeader au = new WsSendSmsDemo.AuthHeader();
+            au.Username = "tthuy";
+            au.Password = "dhdv678";
+            WsSendSmsDemo.Service1 sendsms = new WsSendSmsDemo.Service1();
+            sendsms.AuthHeaderValue = au;
+            string kq = sendsms.sendsms(sdt, noidung);
+            return "[{\"kequa\":\"" + kq + "\"}]";
+        }
+
+        private static Random random = new Random();
+        public static string GetRandomString(int length)
+        {
+            //const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            const string chars = "0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
         }
         #endregion
     }

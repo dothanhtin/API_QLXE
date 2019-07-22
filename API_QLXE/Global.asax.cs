@@ -1,4 +1,5 @@
-﻿using System;
+﻿using API_QLXE.TimerControl;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace API_QLXE
 {
     public class WebApiApplication : System.Web.HttpApplication
     {
-        protected void Application_Start()
+        protected async void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
@@ -20,6 +21,8 @@ namespace API_QLXE
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             Database.SetInitializer<API_QLXE.Models.QLXEContext>(null);
+            CheckExpireOTPCodeTimer checkExpireOTPCode = new CheckExpireOTPCodeTimer();
+            await checkExpireOTPCode.Start();
         }
     }
 }
