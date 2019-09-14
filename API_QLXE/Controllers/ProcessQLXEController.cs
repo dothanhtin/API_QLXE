@@ -16,6 +16,8 @@ using System.Web.Http.Cors;
 namespace API_QLXE.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "X-My-Header")]
+    [RoutePrefix("api/quanlyxe")]
+    //[Route("api/ProcessQLXE")]
     public class ProcessQLXEController: ApiController
     {
         //connection string
@@ -23,6 +25,7 @@ namespace API_QLXE.Controllers
 
         #region CRUD Journey
         [HttpGet]
+        [Route("laydanhsachhanhtrinh")]
         public IHttpActionResult getAllJourney()
         {
             try
@@ -64,6 +67,7 @@ namespace API_QLXE.Controllers
         }
 
         [HttpPost]
+        [Route("crudhanhtrinh")]
         public IHttpActionResult CrudJourney(object obj)
         {
             try
@@ -94,7 +98,8 @@ namespace API_QLXE.Controllers
                 string noiden = p.noiden;
                 string tgxp = p.thoigianxp;
                 int songuoi = p.slnguoi;
-                CrudJourneyOrcl(optTC, idht, tgdk, tgdi, tgve, mucdich, noidi, noiden, tgxp, songuoi);
+                string userdk = p.userdk;
+                CrudJourneyOrcl(optTC, idht, tgdk, tgdi, tgve, mucdich, noidi, noiden, tgxp, songuoi,userdk);
                 return Json(1);
             }
             catch(Exception ex)
@@ -105,6 +110,7 @@ namespace API_QLXE.Controllers
         }
 
         [HttpPost]
+        [Route("layhanhtrinhtheoid")]
         public IHttpActionResult getJourneyById(object obj)
         {
             try
@@ -149,6 +155,7 @@ namespace API_QLXE.Controllers
         }
 
         [HttpPost]
+        [Route("xoahanhtrinhdb")]
         public IHttpActionResult deleteJourneyById(object obj)
         {
             try
@@ -170,8 +177,26 @@ namespace API_QLXE.Controllers
         }
         #endregion
 
+        #region Update Approval
+        [Route("capnhatduyet")]
+        [HttpPost]
+        public IHttpActionResult UpdateApproval([FromBody]ApprovalViewModel approvalViewModel)
+        {
+            try
+            {
+                UpdateApprovalOrcl(approvalViewModel);
+                return Json(1);
+            }
+            catch(Exception ex)
+            {
+                return Json(0);
+                throw ex;
+            }
+        }
+        #endregion
         #region Manage users
         [HttpPost]
+        [Route("dangnhap")]
         public IHttpActionResult userLogin(object obj)
         {
             string jsonStr = JsonConvert.SerializeObject(obj);
@@ -183,6 +208,7 @@ namespace API_QLXE.Controllers
         }
 
         [HttpPost]
+        [Route("doimatkhau")]
         public IHttpActionResult changePassword(object obj)
         {
             string jsonStr = JsonConvert.SerializeObject(obj);
@@ -194,6 +220,7 @@ namespace API_QLXE.Controllers
         }
 
         [HttpPost]
+        [Route("guiotp")]
         public IHttpActionResult sendOTP(object obj)
         {
             QLXEContext cn = new QLXEContext();
@@ -222,6 +249,7 @@ namespace API_QLXE.Controllers
             }
         }
         [HttpPost]
+        [Route("xacthucotp")]
         public IHttpActionResult validateOTP(object obj)
         {
             QLXEContext cn = new QLXEContext();
@@ -244,7 +272,7 @@ namespace API_QLXE.Controllers
         #endregion
 
         #region called function
-        public void CrudJourneyOrcl(int optTC,int idht,DateTime? tgdk,DateTime? tgdi,DateTime? tgve,string mucdich,string noidi,string noiden,string tgxp,int songuoi)
+        public void CrudJourneyOrcl(int optTC,int idht,DateTime? tgdk,DateTime? tgdi,DateTime? tgve,string mucdich,string noidi,string noiden,string tgxp,int songuoi,string userdk)
         {
             try
             {
@@ -262,6 +290,7 @@ namespace API_QLXE.Controllers
                     cmd.Parameters.Add("tgve", OracleDbType.Date).Value = tgve;
                     cmd.Parameters.Add("gioxuatphat", OracleDbType.Varchar2).Value = tgxp;
                     cmd.Parameters.Add("songuoi", OracleDbType.Decimal).Value = songuoi;
+                    cmd.Parameters.Add("userdk", OracleDbType.Varchar2).Value = userdk;
                     cn.Open();
                     cmd.ExecuteNonQuery();
                 }
@@ -402,6 +431,39 @@ namespace API_QLXE.Controllers
             const string chars = "0123456789";
             return new string(Enumerable.Repeat(chars, length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public void UpdateApprovalOrcl(ApprovalViewModel approvalViewModel)
+        {
+            try
+            {
+                using (OracleConnection cn = new OracleConnection(connstring))
+                {
+                    OracleCommand cmd = new OracleCommand("HANHTRINHXE.Capnhatduyet", cn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("optTC", OracleDbType.Decimal).Value = approvalViewModel.optTC;
+                    cmd.Parameters.Add("idht", OracleDbType.Decimal).Value = approvalViewModel.idht;
+                    cmd.Parameters.Add("idxe", OracleDbType.Decimal).Value = approvalViewModel.idxe;
+                    cmd.Parameters.Add("taixe", OracleDbType.Decimal).Value = approvalViewModel.taixe;
+                    cmd.Parameters.Add("tgdi", OracleDbType.Date).Value = approvalViewModel.tgdi;
+                    cmd.Parameters.Add("tgve", OracleDbType.Date).Value = approvalViewModel.tgve;
+                    cmd.Parameters.Add("gioxuatphat", OracleDbType.Varchar2).Value = approvalViewModel.gioxuatphat;
+                    cmd.Parameters.Add("kmdi", OracleDbType.Decimal).Value = approvalViewModel.kmdi;
+                    cmd.Parameters.Add("kmve", OracleDbType.Decimal).Value = approvalViewModel.kmve;
+                    cmd.Parameters.Add("tgcau", OracleDbType.Decimal).Value = approvalViewModel.tgcau;
+                    cmd.Parameters.Add("userduyet", OracleDbType.Varchar2).Value = approvalViewModel.userduyet;
+                    cmd.Parameters.Add("lydo", OracleDbType.Varchar2).Value = approvalViewModel.lydo;
+                    cmd.Parameters.Add("ngayin", OracleDbType.Date).Value = approvalViewModel.ngayin;
+                    cmd.Parameters.Add("ngayht", OracleDbType.Date).Value = approvalViewModel.ngayht;
+                    cmd.Parameters.Add("ngayduyet", OracleDbType.Date).Value = approvalViewModel.ngayduyet;
+                    cn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
         #endregion
     }
