@@ -9,6 +9,7 @@ using System.Data;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Transactions;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
@@ -18,7 +19,7 @@ namespace API_QLXE.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "X-My-Header")]
     [RoutePrefix("api/quanlyxe")]
     //[Route("api/ProcessQLXE")]
-    public class ProcessQLXEController: ApiController
+    public class ProcessQLXEController : ApiController
     {
         //connection string
         public string connstring = ConfigurationManager.ConnectionStrings["QLXE"].ConnectionString;
@@ -32,35 +33,35 @@ namespace API_QLXE.Controllers
             {
                 QLXEContext cn = new QLXEContext();
                 //var res = cn.Hanhtrinhs.AsQueryable().ToList();
-                var res= (from item1 in cn.Hanhtrinhs
-                          join item2 in cn.DmLoaiHanhtrinhs on item1.LOAI_HT equals item2.ID
-                          join item3 in cn.DmTrangthaiHts on item1.TRANG_THAI equals item3.ID
-                          select new HanhtrinhViewModel
-                          {
-                              id = item1.ID,
-                              //xe = item1.XE,
-                              //taixe = item1.TAI_XE,
-                              thoigiandk = item1.NGAY_DK,
-                              mucdich = item1.MUC_DICH,
-                              noidi = item1.NOI_DI,
-                              noiden = item1.NOI_DEN,
-                              thoigiandi = item1.TG_DI,
-                              thoigianve = item1.TG_VE,
-                              thoigianxp = item1.GIO_XUAT_PHAT,
-                              //kmdi = item1.KM_DI,
-                              //kmve = item1.KM_VE,
-                              //thoigiancau = item1.TG_CAU,
-                              slnguoi = item1.SO_NGUOI,
-                              //userdk = item1.USER_DK,
-                              //nguoiduyet = item1.NGUOI_DUYET,
-                              trangthaicode=item1.TRANG_THAI,
-                              trangthai = item3.TEN_TTHT,
-                              loaihanhtrinh = item2.TEN_LOAI_HT,
-                              //ngayin = item1.NGAY_IN
-                          }).DistinctBy(s => s.id).OrderByDescending(s=>s.id).ToList();
+                var res = (from item1 in cn.Hanhtrinhs
+                           join item2 in cn.DmLoaiHanhtrinhs on item1.LOAI_HT equals item2.ID
+                           join item3 in cn.DmTrangthaiHts on item1.TRANG_THAI equals item3.ID
+                           select new HanhtrinhViewModel
+                           {
+                               id = item1.ID,
+                               //xe = item1.XE,
+                               //taixe = item1.TAI_XE,
+                               thoigiandk = item1.NGAY_DK,
+                               mucdich = item1.MUC_DICH,
+                               noidi = item1.NOI_DI,
+                               noiden = item1.NOI_DEN,
+                               thoigiandi = item1.TG_DI,
+                               thoigianve = item1.TG_VE,
+                               thoigianxp = item1.GIO_XUAT_PHAT,
+                               //kmdi = item1.KM_DI,
+                               //kmve = item1.KM_VE,
+                               //thoigiancau = item1.TG_CAU,
+                               slnguoi = item1.SO_NGUOI,
+                               //userdk = item1.USER_DK,
+                               //nguoiduyet = item1.NGUOI_DUYET,
+                               trangthaicode = item1.TRANG_THAI,
+                               trangthai = item3.TEN_TTHT,
+                               loaihanhtrinh = item2.TEN_LOAI_HT,
+                               //ngayin = item1.NGAY_IN
+                           }).DistinctBy(s => s.id).OrderByDescending(s => s.id).ToList();
                 return Json(res);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -72,8 +73,8 @@ namespace API_QLXE.Controllers
         {
             try
             {
-                string formatStartDate, formatEndDate,formatSignDate;
-                DateTime? tgdi = null, tgve = null, tgdk=null;
+                string formatStartDate, formatEndDate, formatSignDate;
+                DateTime? tgdi = null, tgve = null, tgdk = null;
                 string jsonStr = JsonConvert.SerializeObject(obj);
                 var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
                 int optTC = int.Parse((string)p.optTC);
@@ -99,10 +100,10 @@ namespace API_QLXE.Controllers
                 string tgxp = p.thoigianxp;
                 int songuoi = p.slnguoi;
                 string userdk = p.userdk;
-                CrudJourneyOrcl(optTC, idht, tgdk, tgdi, tgve, mucdich, noidi, noiden, tgxp, songuoi,userdk);
+                CrudJourneyOrcl(optTC, idht, tgdk, tgdi, tgve, mucdich, noidi, noiden, tgxp, songuoi, userdk);
                 return Json(1);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return Json(0);
                 throw ex;
@@ -120,35 +121,35 @@ namespace API_QLXE.Controllers
                 var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
                 int id = int.Parse((string)p.id);
                 //var journey = cn.Hanhtrinhs.Find(id);
-                var res = (from item1 in cn.Hanhtrinhs.Where(k=>k.ID==id)
+                var res = (from item1 in cn.Hanhtrinhs.Where(k => k.ID == id)
                            join item2 in cn.DmLoaiHanhtrinhs on item1.LOAI_HT equals item2.ID
                            join item3 in cn.DmTrangthaiHts on item1.TRANG_THAI equals item3.ID
                            select new HanhtrinhViewModel
                            {
-                               id=item1.ID,
+                               id = item1.ID,
                                //xe=item1.XE,
                                //taixe=item1.TAI_XE,
-                               thoigiandk=item1.NGAY_DK,
-                               mucdich=item1.MUC_DICH,
-                               noidi=item1.NOI_DI,
-                               noiden=item1.NOI_DEN,
-                               thoigiandi=item1.TG_DI,
-                               thoigianve=item1.TG_VE,
-                               thoigianxp=item1.GIO_XUAT_PHAT,
+                               thoigiandk = item1.NGAY_DK,
+                               mucdich = item1.MUC_DICH,
+                               noidi = item1.NOI_DI,
+                               noiden = item1.NOI_DEN,
+                               thoigiandi = item1.TG_DI,
+                               thoigianve = item1.TG_VE,
+                               thoigianxp = item1.GIO_XUAT_PHAT,
                                //kmdi=item1.KM_DI,
                                //kmve=item1.KM_VE,
                                //thoigiancau=item1.TG_CAU,
-                               slnguoi=item1.SO_NGUOI,
+                               slnguoi = item1.SO_NGUOI,
                                //userdk=item1.USER_DK,
                                //nguoiduyet=item1.NGUOI_DUYET,
                                trangthaicode = item1.TRANG_THAI,
-                               trangthai =item3.TEN_TTHT,
-                               loaihanhtrinh=item2.TEN_LOAI_HT,
+                               trangthai = item3.TEN_TTHT,
+                               loaihanhtrinh = item2.TEN_LOAI_HT,
                                //ngayin=item1.NGAY_IN
                            }).DistinctBy(s => s.id).ToList();
                 return Json(res.FirstOrDefault());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -160,18 +161,83 @@ namespace API_QLXE.Controllers
         {
             try
             {
-                QLXEContext cn = new QLXEContext();
-                string jsonStr = JsonConvert.SerializeObject(obj);
-                var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
-                int id = int.Parse((string)p.id);
-                var journey = cn.Hanhtrinhs.Find(id);
-                cn.Hanhtrinhs.Remove(journey);
-                cn.SaveChanges();
-                return Json(1);
+                using (TransactionScope scope = new TransactionScope())
+                {
+                    QLXEContext cn = new QLXEContext();
+                    string jsonStr = JsonConvert.SerializeObject(obj);
+                    var p = JsonConvert.DeserializeObject<dynamic>(jsonStr);
+                    int id = int.Parse((string)p.id);
+                    var journey = cn.Hanhtrinhs.Find(id);
+                    cn.Hanhtrinhs.Remove(journey);
+                    cn.SaveChanges();
+                    scope.Complete();
+                    return Json(1);
+                }
             }
             catch (Exception ex)
             {
                 return Json(0);
+                throw ex;
+            }
+        }
+        #endregion
+
+        #region Get list journeys of user
+        [HttpPost]
+        [Route("laydanhsachhanhtrinhTheoNguoiDung")]
+        public IHttpActionResult getListJourneyByUserId([FromBody]GetListJourneyByUserIdViewModel getListJourneyByUserIdViewModel)
+        {
+            try
+            {
+                List<JourneyInfo> journeyInfos = new List<JourneyInfo>();
+                DataTable dt = getListJourneyByUserIdOrcl(getListJourneyByUserIdViewModel);
+                //List<DataRow> dataRows = new List<DataRow>(dt.Select());
+                journeyInfos = (from DataRow row in dt.Rows
+                                select new JourneyInfo
+                                {
+                                    ID = int.Parse(row["ID"].ToString()),
+                                    XE = row["XE"].ToString(),
+                                    TAI_XE = row["TAI_XE"].ToString(),
+                                    NGAY_DK = string.IsNullOrEmpty(row["NGAY_DK"].ToString()) ? null : (DateTime?)row["NGAY_DK"],
+                                    MUC_DICH = row["MUC_DICH"].ToString(),
+                                    NOI_DI = row["NOI_DI"].ToString(),
+                                    NOI_DEN = row["NOI_DEN"].ToString(),
+                                    TG_DI = string.IsNullOrEmpty(row["TG_DI"].ToString()) ? null : (DateTime?)row["TG_DI"],
+                                    TG_VE = string.IsNullOrEmpty(row["TG_VE"].ToString()) ? null : (DateTime?)row["TG_VE"],
+                                    GIO_XUAT_PHAT = row["GIO_XUAT_PHAT"].ToString(),
+                                    KM_DI = row["KM_DI"].ToString(),
+                                    KM_VE = row["KM_VE"].ToString(),
+                                    TG_CAU = row["TG_CAU"].ToString(),
+                                    SO_NGUOI = row["SO_NGUOI"].ToString(),
+                                    USER_DK = row["USER_DK"].ToString(),
+                                    USER_DUYET = row["USER_DUYET"].ToString(),
+                                    TRANG_THAI = row["TRANG_THAI"].ToString(),
+                                    LOAI_HT = row["LOAI_HT"].ToString(),
+                                    NGAY_IN = string.IsNullOrEmpty(row["NGAY_IN"].ToString()) ? null : (DateTime?)row["NGAY_IN"],
+                                    NGAY_DUYET = string.IsNullOrEmpty(row["NGAY_DUYET"].ToString()) ? null : (DateTime?)row["NGAY_DUYET"],
+                                    NGAY_HTRA = string.IsNullOrEmpty(row["NGAY_HTRA"].ToString()) ? null : (DateTime?)row["NGAY_HTRA"],
+                                    NGAY_HT = string.IsNullOrEmpty(row["NGAY_HT"].ToString()) ? null : (DateTime?)row["NGAY_HT"],
+                                    LY_DO = row["LY_DO"].ToString(),
+                                    //NGAY_DK1 = string.IsNullOrEmpty(row["NGAY_DK1"].ToString()) ? null : (DateTime?)row["NGAY_DK1"],
+                                    //TG_DI1 = string.IsNullOrEmpty(row["TG_DI1"].ToString()) ? null : (DateTime?)row["TG_DI1"],
+                                    //TG_VE1 = string.IsNullOrEmpty(row["TG_VE1"].ToString()) ? null : (DateTime?)row["TG_VE1"],
+                                    NGAY_DK1 = row["NGAY_DK1"].ToString(),
+                                    TG_DI1 = row["TG_DI1"].ToString(),
+                                    TG_VE1 = row["TG_VE1"].ToString(),
+                                    TEN_TTHT = row["TEN_TTHT"].ToString(),
+                                    TEN_DK = row["TEN_DK"].ToString(),
+                                    TEN_ND = row["TEN_ND"].ToString(),
+                                    SO_XE = row["SO_XE"].ToString(),
+                                    KMDI1 = row["KMDI1"].ToString(),
+                                    TEN_TX = row["TEN_TX"].ToString(),
+                                    DONVI_ID = row["DONVI_ID"].ToString(),
+                                    TEN_DONVI_CON = row["TEN_DONVI_CON"].ToString(),
+                                    TEN_LOAI_HT = row["TEN_LOAI_HT"].ToString()
+                                }).ToList();
+                return Json(journeyInfos);
+            }
+            catch(Exception ex)
+            {
                 throw ex;
             }
         }
@@ -187,6 +253,24 @@ namespace API_QLXE.Controllers
                 UpdateApprovalOrcl(approvalViewModel);
                 return Json(1);
             }
+            catch (Exception ex)
+            {
+                return Json(0);
+                throw ex;
+            }
+        }
+        #endregion
+
+        #region Update Kilometers
+        [Route("capnhatkm")]
+        [HttpPost]
+        public IHttpActionResult UpdateKilometers([FromBody]KilometerViewModel kilometerViewModel)
+        {
+            try
+            {
+                UpdateKilometersOrcl(kilometerViewModel);
+                return Json(1);
+            }
             catch(Exception ex)
             {
                 return Json(0);
@@ -194,7 +278,24 @@ namespace API_QLXE.Controllers
             }
         }
         #endregion
+
         #region Manage users
+        [HttpPost]
+        [Route("kiemtratendangnhap")]
+        public IHttpActionResult checkUsername([FromBody]UserNameViewModel userNameViewModel)
+        {
+            try
+            {
+                var res = Logincheck(userNameViewModel.username);
+                if (res.Rows.Count > 0) return Json(1);
+                return Json(0);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         [HttpPost]
         [Route("dangnhap")]
         public IHttpActionResult userLogin(object obj)
@@ -229,19 +330,23 @@ namespace API_QLXE.Controllers
             string phonenumber = p.phonenumber;
             try
             {
-                //Tạo mã
-                string OTPCode = GetRandomString(6);
-                //Lưu
-                Otp otp = new Otp();
-                otp.OTP_CODE = OTPCode;
-                otp.PHONE_NUMBER = phonenumber;
-                otp.CREATEDTIME = DateTime.Now;
-                cn.Otps.Add(otp);
-                cn.SaveChanges();
-                //Gửi SMS
-                string message = String.Format("Ma OTP xac thuc tai khoan dang nhap {0} cua quy khach vao he thong QLXE la:{1}. Ma co hieu luc trong vong 5 phut.",phonenumber, OTPCode);
-                string res = send_sms(phonenumber,OTPCode);
-                return Json(res); 
+                using (TransactionScope scope = new TransactionScope())
+                {
+                    //Tạo mã
+                    string OTPCode = GetRandomString(6);
+                    //Lưu
+                    Otp otp = new Otp();
+                    otp.OTP_CODE = OTPCode;
+                    otp.PHONE_NUMBER = phonenumber;
+                    otp.CREATEDTIME = DateTime.Now;
+                    cn.Otps.Add(otp);
+                    cn.SaveChanges();
+                    scope.Complete();
+                    //Gửi SMS
+                    string message = String.Format("Ma OTP xac thuc tai khoan dang nhap {0} cua quy khach vao he thong QLXE la:{1}. Ma co hieu luc trong vong 5 phut.", phonenumber, OTPCode);
+                    string res = send_sms(phonenumber, message);
+                    return Json(res);
+                }
             }
             catch (Exception ex)
             {
@@ -264,7 +369,7 @@ namespace API_QLXE.Controllers
                     return Json(1);
                 return Json(0);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -272,7 +377,7 @@ namespace API_QLXE.Controllers
         #endregion
 
         #region called function
-        public void CrudJourneyOrcl(int optTC,int idht,DateTime? tgdk,DateTime? tgdi,DateTime? tgve,string mucdich,string noidi,string noiden,string tgxp,int songuoi,string userdk)
+        public void CrudJourneyOrcl(int optTC, int idht, DateTime? tgdk, DateTime? tgdi, DateTime? tgve, string mucdich, string noidi, string noiden, string tgxp, int songuoi, string userdk)
         {
             try
             {
@@ -301,7 +406,7 @@ namespace API_QLXE.Controllers
             }
         }
 
-        public object checklogin(string username,string password_md5)
+        public object checklogin(string username, string password_md5)
         {
             QLXEContext cn = new QLXEContext();
             List<UserInfoModel> userInfoModels = new List<UserInfoModel>();
@@ -320,19 +425,19 @@ namespace API_QLXE.Controllers
                         userInfoModels = (from DataRow row in dt.Rows
                                           select new UserInfoModel
                                           {
-                                              USERNAME= row["USERNAME"].ToString(),
-                                              PASS=row["PASS"].ToString(),
-                                              PASSFINAL = row["PASSFINAL"].ToString(),
-                                              NHANVIEN_ID = row["NHANVIEN_ID"].ToString(),
-                                              NGAY_LOGIN = (DateTime)row["NGAY_LOGIN"],
-                                              TRANG_THAI = int.Parse(row["TRANG_THAI"].ToString()),
-                                              GHI_CHU = row["GHI_CHU"].ToString(),
-                                              CREATE_DATE = (DateTime)row["CREATE_DATE"],
-                                              TEN_NV = row["TEN_NV"].ToString(),
-                                              SDT_LH = row["SDT_LH"].ToString(),
-                                              DONVI_ID = int.Parse(row["DONVI_ID"].ToString()),
-                                              DONVI_CHA_ID = int.Parse(row["DONVI_CHA_ID"].ToString()),
-                                              TEN_DV_CHA = row["TEN_DV_CHA"].ToString()
+                                              username = row["USERNAME"].ToString(),
+                                              //PASS=row["PASS"].ToString(),
+                                              //PASSFINAL = row["PASSFINAL"].ToString(),
+                                              nhanvien_id = row["NHANVIEN_ID"].ToString(),
+                                              ngay_login = (DateTime)row["NGAY_LOGIN"],
+                                              trang_thai = int.Parse(row["TRANG_THAI"].ToString()),
+                                              ghi_chu = row["GHI_CHU"].ToString(),
+                                              create_date = (DateTime)row["CREATE_DATE"],
+                                              ten_nv = row["TEN_NV"].ToString(),
+                                              sdt_lh = row["SDT_LH"].ToString(),
+                                              donvi_id = int.Parse(row["DONVI_ID"].ToString()),
+                                              donvi_cha_id = int.Parse(row["DONVI_CHA_ID"].ToString()),
+                                              ten_dv_cha = row["TEN_DV_CHA"].ToString()
                                           }).ToList();
                         return new { code = 1, data = userInfoModels };
                     }
@@ -340,12 +445,27 @@ namespace API_QLXE.Controllers
                 }
                 return new { code = -1, data = userInfoModels };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }
         }
-        public DataTable Loginchecktaoss(string username,string password_md5)
+
+        public DataTable Logincheck(string username)
+        {
+            using (OracleConnection cn = new OracleConnection(connstring))
+            {
+                OracleCommand cmd = new OracleCommand("QUANTRIHETHONG.Logincheck", cn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add("user", OracleDbType.Varchar2).Value = username;
+                cmd.Parameters.Add("Param1", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+                OracleDataAdapter da = new OracleDataAdapter(cmd);
+                DataTable d = new DataTable();
+                da.Fill(d);
+                return d;
+            }
+        }
+        public DataTable Loginchecktaoss(string username, string password_md5)
         {
             using (OracleConnection cn = new OracleConnection(connstring))
             {
@@ -360,7 +480,7 @@ namespace API_QLXE.Controllers
                 return d;
             }
         }
-        public int changePassProc(string username,string newpass_md5)
+        public int changePassProc(string username, string newpass_md5)
         {
             try
             {
@@ -375,9 +495,50 @@ namespace API_QLXE.Controllers
                 }
                 return 1;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return 0;
+                throw ex;
+            }
+        }
+        public void UpdateKilometersOrcl(KilometerViewModel kilometerViewModel)
+        {
+            try
+            {
+                using (OracleConnection cn = new OracleConnection(connstring))
+                {
+                    OracleCommand cmd = new OracleCommand("HANHTRINHXE.Capnhatkm", cn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("idxe", OracleDbType.Decimal).Value = kilometerViewModel.idxe;
+                    cmd.Parameters.Add("kmdongho", OracleDbType.Decimal).Value = kilometerViewModel.kmdongho;
+                    cn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public DataTable getListJourneyByUserIdOrcl(GetListJourneyByUserIdViewModel getListJourneyByUserIdViewModel)
+        {
+            try
+            {
+                using (OracleConnection cn = new OracleConnection(connstring))
+                {
+                    OracleCommand cmd = new OracleCommand("HANHTRINHXE.GetCngridhtdvidk", cn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("userdk", OracleDbType.Varchar2).Value = getListJourneyByUserIdViewModel.userdk;
+                    cmd.Parameters.Add("dv", OracleDbType.Varchar2).Value = getListJourneyByUserIdViewModel.dv;
+                    cmd.Parameters.Add("Param1", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+                    OracleDataAdapter da = new OracleDataAdapter(cmd);
+                    DataTable d = new DataTable();
+                    da.Fill(d);
+                    return d;
+                }
+            }
+            catch(Exception ex)
+            {
                 throw ex;
             }
         }
@@ -421,7 +582,7 @@ namespace API_QLXE.Controllers
             WsSendSmsDemo.Service1 sendsms = new WsSendSmsDemo.Service1();
             sendsms.AuthHeaderValue = au;
             string kq = sendsms.sendsms(sdt, noidung);
-            return "[{\"kequa\":\"" + kq + "\"}]";
+            return kq;
         }
 
         private static Random random = new Random();
@@ -460,7 +621,7 @@ namespace API_QLXE.Controllers
                     cmd.ExecuteNonQuery();
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw ex;
             }

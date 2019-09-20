@@ -24,7 +24,7 @@ namespace API_QLXE.Models
         public virtual long? TG_CAU { get; set; }
         public virtual short? SO_NGUOI { get; set; }
         public virtual string USER_DK { get; set; }
-        public virtual string NGUOI_DUYET { get; set; }
+        public virtual string USER_DUYET { get; set; }
         public virtual short? TRANG_THAI { get; set; }
         public virtual short? LOAI_HT { get; set; }
         public virtual DateTime? NGAY_IN { get; set; }
