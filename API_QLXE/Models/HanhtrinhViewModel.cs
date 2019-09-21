@@ -22,7 +22,7 @@ namespace API_QLXE.Models
         //public virtual long? thoigiancau { get; set; }
         public virtual short? slnguoi { get; set; }
         //public virtual string userdk { get; set; }
-        //public virtual string nguoiduyet { get; set; }
+        //public virtual string userduyet { get; set; }
         public virtual short? trangthaicode { get; set; }
         public virtual string trangthai { get; set; }
         public virtual string loaihanhtrinh { get; set; }

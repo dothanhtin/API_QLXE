@@ -23,4 +23,18 @@ namespace API_QLXE.Models
         public DateTime ngayht { get; set; }
         public DateTime ngayduyet { get; set; }
     }
+    public class UserNameViewModel
+    {
+        public string username { get; set; }
+    }
+    public class KilometerViewModel
+    {
+        public int idxe { get; set; }
+        public int kmdongho { get; set; }
+    }
+    public class GetListJourneyByUserIdViewModel
+    {
+        public string userdk { get; set; }
+        public string dv { get; set; }
+    }
 }

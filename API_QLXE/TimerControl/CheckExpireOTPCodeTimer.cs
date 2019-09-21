@@ -19,10 +19,13 @@ namespace API_QLXE.TimerControl
         }
         public async Task Start()
         {
-            checkExpireInterval = int.Parse(ConfigurationManager.AppSettings["checkExpireInterval"]);
-            checkExpireOTPCodeTimer.Interval = checkExpireInterval;
-            checkExpireOTPCodeTimer.Start();
-            checkExpireOTPCodeTimer.Elapsed += CheckExpireOTPFunc;
+            await Task.Run(() =>
+            {
+                checkExpireInterval = int.Parse(ConfigurationManager.AppSettings["checkExpireInterval"]);
+                checkExpireOTPCodeTimer.Interval = checkExpireInterval;
+                checkExpireOTPCodeTimer.Start();
+                checkExpireOTPCodeTimer.Elapsed += CheckExpireOTPFunc;
+            });
         }
 
         public void CheckExpireOTPFunc(object o, ElapsedEventArgs e)

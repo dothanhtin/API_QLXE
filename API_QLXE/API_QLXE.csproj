@@ -224,6 +224,7 @@
     <Compile Include="Models\DmTrangthaiHt.cs" />
     <Compile Include="Models\Hanhtrinh.cs" />
     <Compile Include="Models\HanhtrinhViewModel.cs" />
+    <Compile Include="Models\JourneyInfo.cs" />
     <Compile Include="Models\NguoiDung.cs" />
     <Compile Include="Models\Otp.cs" />
     <Compile Include="Models\QLXEContext.cs" />

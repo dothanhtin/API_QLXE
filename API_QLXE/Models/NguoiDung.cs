@@ -7,7 +7,7 @@ using System.Web;
 
 namespace API_QLXE.Models
 {
-    [Table("NGUOIDUNG")]
+    [Table("QLXE.NGUOIDUNG")]
     public class NguoiDung
     {
         public string USERNAME { get; set; }
