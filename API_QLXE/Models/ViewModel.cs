@@ -37,4 +37,8 @@ namespace API_QLXE.Models
         public string userdk { get; set; }
         public string dv { get; set; }
     }
+    public class GetListJourneyWaitApprovingByUserIdViewModel
+    {
+        public string dv { get; set; }
+    }
 }

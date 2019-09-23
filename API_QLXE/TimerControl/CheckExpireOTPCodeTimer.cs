@@ -34,7 +34,7 @@ namespace API_QLXE.TimerControl
             try
             {
                 var res =(from item1 in cn.Otps.AsQueryable().ToList()
-                         where DateTime.Now.Subtract(item1.CREATEDTIME).TotalHours>5 
+                         where DateTime.Now.Subtract(item1.CREATEDTIME).TotalMinutes>5 
                          select item1).ToList();
                 foreach(var item in res)
                 {

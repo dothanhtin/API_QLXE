@@ -17,5 +17,9 @@ namespace API_QLXE.Models
         public DbSet<DmTrangthaiHt> DmTrangthaiHts { get; set; }
         public DbSet<NguoiDung> NguoiDungs { get; set; }
         public DbSet<Otp> Otps { get; set; }
+        public DbSet<Xe> Xes { get; set; }
+        public DbSet<TaiXe> TaiXes { get; set; }
+        public DbSet<NhanVien> nhanViens { get; set; }
+        public DbSet<QuanLyXe> quanLyXes { get; set; }
     }
 }

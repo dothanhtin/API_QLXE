@@ -24,6 +24,63 @@ namespace API_QLXE.Controllers
         //connection string
         public string connstring = ConfigurationManager.ConnectionStrings["QLXE"].ConnectionString;
 
+        #region Category
+        [HttpGet]
+        [Route("laydanhsachxe")]
+        public IHttpActionResult getListVehicle()
+        {
+            try
+            {
+                QLXEContext cn = new QLXEContext();
+                var res = cn.Xes.Select(p => new xeView
+                {
+                    id=p.ID,
+                    so_xe=p.SO_XE,
+                    ten_xe=p.TEN_XE,
+                    loai_xe=p.LOAI_XE,
+                    km=p.KM,
+                    km_qt=p.KM_QT
+                }).ToList();
+                if (res.Count > 0) return Json(res);
+                return Json(0); //nothing
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpGet]
+        [Route("laydanhsachtaixe")]
+        public IHttpActionResult getListDriver()
+        {
+            try
+            {
+                try
+                {
+                    QLXEContext cn = new QLXEContext();
+                    var res = (from item1 in cn.TaiXes.ToList()
+                               join item2 in cn.nhanViens.ToList() on item1.NHANVIEN_ID equals item2.NHANVIEN_ID
+                               select new taixeView{
+                                   id=item1.ID,
+                                   nhanvien_id=item1.NHANVIEN_ID,
+                                   ten_taixe=item2.TEN_NV
+                               }).ToList();
+                    if (res.Count > 0) return Json(res);
+                    return Json(0); //nothing
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+
         #region CRUD Journey
         [HttpGet]
         [Route("laydanhsachhanhtrinh")]
@@ -195,48 +252,170 @@ namespace API_QLXE.Controllers
                 journeyInfos = (from DataRow row in dt.Rows
                                 select new JourneyInfo
                                 {
-                                    ID = int.Parse(row["ID"].ToString()),
-                                    XE = row["XE"].ToString(),
-                                    TAI_XE = row["TAI_XE"].ToString(),
-                                    NGAY_DK = string.IsNullOrEmpty(row["NGAY_DK"].ToString()) ? null : (DateTime?)row["NGAY_DK"],
-                                    MUC_DICH = row["MUC_DICH"].ToString(),
-                                    NOI_DI = row["NOI_DI"].ToString(),
-                                    NOI_DEN = row["NOI_DEN"].ToString(),
-                                    TG_DI = string.IsNullOrEmpty(row["TG_DI"].ToString()) ? null : (DateTime?)row["TG_DI"],
-                                    TG_VE = string.IsNullOrEmpty(row["TG_VE"].ToString()) ? null : (DateTime?)row["TG_VE"],
-                                    GIO_XUAT_PHAT = row["GIO_XUAT_PHAT"].ToString(),
-                                    KM_DI = row["KM_DI"].ToString(),
-                                    KM_VE = row["KM_VE"].ToString(),
-                                    TG_CAU = row["TG_CAU"].ToString(),
-                                    SO_NGUOI = row["SO_NGUOI"].ToString(),
-                                    USER_DK = row["USER_DK"].ToString(),
-                                    USER_DUYET = row["USER_DUYET"].ToString(),
-                                    TRANG_THAI = row["TRANG_THAI"].ToString(),
-                                    LOAI_HT = row["LOAI_HT"].ToString(),
-                                    NGAY_IN = string.IsNullOrEmpty(row["NGAY_IN"].ToString()) ? null : (DateTime?)row["NGAY_IN"],
-                                    NGAY_DUYET = string.IsNullOrEmpty(row["NGAY_DUYET"].ToString()) ? null : (DateTime?)row["NGAY_DUYET"],
-                                    NGAY_HTRA = string.IsNullOrEmpty(row["NGAY_HTRA"].ToString()) ? null : (DateTime?)row["NGAY_HTRA"],
-                                    NGAY_HT = string.IsNullOrEmpty(row["NGAY_HT"].ToString()) ? null : (DateTime?)row["NGAY_HT"],
-                                    LY_DO = row["LY_DO"].ToString(),
+                                    id = int.Parse(row["ID"].ToString()),
+                                    xe = row["XE"].ToString(),
+                                    tai_xe = row["TAI_XE"].ToString(),
+                                    ngay_dk = string.IsNullOrEmpty(row["NGAY_DK"].ToString()) ? null : (DateTime?)row["NGAY_DK"],
+                                    muc_dich = row["MUC_DICH"].ToString(),
+                                    noi_di = row["NOI_DI"].ToString(),
+                                    noi_den = row["NOI_DEN"].ToString(),
+                                    tg_di = string.IsNullOrEmpty(row["TG_DI"].ToString()) ? null : (DateTime?)row["TG_DI"],
+                                    tg_ve = string.IsNullOrEmpty(row["TG_VE"].ToString()) ? null : (DateTime?)row["TG_VE"],
+                                    gio_xuat_phat = row["GIO_XUAT_PHAT"].ToString(),
+                                    km_di = row["KM_DI"].ToString(),
+                                    km_ve = row["KM_VE"].ToString(),
+                                    tg_cau = row["TG_CAU"].ToString(),
+                                    so_nguoi = row["SO_NGUOI"].ToString(),
+                                    user_dk = row["USER_DK"].ToString(),
+                                    user_duyet = row["USER_DUYET"].ToString(),
+                                    trang_thai = row["TRANG_THAI"].ToString(),
+                                    loai_ht = row["LOAI_HT"].ToString(),
+                                    ngay_in = string.IsNullOrEmpty(row["NGAY_IN"].ToString()) ? null : (DateTime?)row["NGAY_IN"],
+                                    ngay_duyet = string.IsNullOrEmpty(row["NGAY_DUYET"].ToString()) ? null : (DateTime?)row["NGAY_DUYET"],
+                                    ngay_htra = string.IsNullOrEmpty(row["NGAY_HTRA"].ToString()) ? null : (DateTime?)row["NGAY_HTRA"],
+                                    ngay_ht = string.IsNullOrEmpty(row["NGAY_HT"].ToString()) ? null : (DateTime?)row["NGAY_HT"],
+                                    ly_do = row["LY_DO"].ToString(),
                                     //NGAY_DK1 = string.IsNullOrEmpty(row["NGAY_DK1"].ToString()) ? null : (DateTime?)row["NGAY_DK1"],
                                     //TG_DI1 = string.IsNullOrEmpty(row["TG_DI1"].ToString()) ? null : (DateTime?)row["TG_DI1"],
                                     //TG_VE1 = string.IsNullOrEmpty(row["TG_VE1"].ToString()) ? null : (DateTime?)row["TG_VE1"],
-                                    NGAY_DK1 = row["NGAY_DK1"].ToString(),
-                                    TG_DI1 = row["TG_DI1"].ToString(),
-                                    TG_VE1 = row["TG_VE1"].ToString(),
-                                    TEN_TTHT = row["TEN_TTHT"].ToString(),
-                                    TEN_DK = row["TEN_DK"].ToString(),
-                                    TEN_ND = row["TEN_ND"].ToString(),
-                                    SO_XE = row["SO_XE"].ToString(),
-                                    KMDI1 = row["KMDI1"].ToString(),
-                                    TEN_TX = row["TEN_TX"].ToString(),
-                                    DONVI_ID = row["DONVI_ID"].ToString(),
-                                    TEN_DONVI_CON = row["TEN_DONVI_CON"].ToString(),
-                                    TEN_LOAI_HT = row["TEN_LOAI_HT"].ToString()
+                                    ngay_dk1 = row["NGAY_DK1"].ToString(),
+                                    tg_di1 = row["TG_DI1"].ToString(),
+                                    tg_ve1 = row["TG_VE1"].ToString(),
+                                    ten_ttht = row["TEN_TTHT"].ToString(),
+                                    ten_dk = row["TEN_DK"].ToString(),
+                                    ten_nd = row["TEN_ND"].ToString(),
+                                    so_xe = row["SO_XE"].ToString(),
+                                    kmdi1 = row["KMDI1"].ToString(),
+                                    ten_tx = row["TEN_TX"].ToString(),
+                                    donvi_id = row["DONVI_ID"].ToString(),
+                                    ten_donvi_con = row["TEN_DONVI_CON"].ToString(),
+                                    ten_loai_ht = row["TEN_LOAI_HT"].ToString()
                                 }).ToList();
                 return Json(journeyInfos);
             }
             catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpPost]
+        [Route("laydanhsachhanhtrinhTheoNguoiDuyet")]
+        public IHttpActionResult getListJourneyWaitApprovingByUserId([FromBody]GetListJourneyWaitApprovingByUserIdViewModel getListJourneyWaitApprovingByUserIdView)
+        {
+            try
+            {
+                List<JourneyInfo> journeyInfos = new List<JourneyInfo>();
+                DataTable dt = getListJourneyWaitApprovingByUserIdOrcl(getListJourneyWaitApprovingByUserIdView.dv);
+                //List<DataRow> dataRows = new List<DataRow>(dt.Select());
+                journeyInfos = (from DataRow row in dt.Rows
+                                select new JourneyInfo
+                                {
+                                    id = int.Parse(row["ID"].ToString()),
+                                    xe = row["XE"].ToString(),
+                                    tai_xe = row["TAI_XE"].ToString(),
+                                    ngay_dk = string.IsNullOrEmpty(row["NGAY_DK"].ToString()) ? null : (DateTime?)row["NGAY_DK"],
+                                    muc_dich = row["MUC_DICH"].ToString(),
+                                    noi_di = row["NOI_DI"].ToString(),
+                                    noi_den = row["NOI_DEN"].ToString(),
+                                    tg_di = string.IsNullOrEmpty(row["TG_DI"].ToString()) ? null : (DateTime?)row["TG_DI"],
+                                    tg_ve = string.IsNullOrEmpty(row["TG_VE"].ToString()) ? null : (DateTime?)row["TG_VE"],
+                                    gio_xuat_phat = row["GIO_XUAT_PHAT"].ToString(),
+                                    km_di = row["KM_DI"].ToString(),
+                                    km_ve = row["KM_VE"].ToString(),
+                                    tg_cau = row["TG_CAU"].ToString(),
+                                    so_nguoi = row["SO_NGUOI"].ToString(),
+                                    user_dk = row["USER_DK"].ToString(),
+                                    user_duyet = row["USER_DUYET"].ToString(),
+                                    trang_thai = row["TRANG_THAI"].ToString(),
+                                    loai_ht = row["LOAI_HT"].ToString(),
+                                    ngay_in = string.IsNullOrEmpty(row["NGAY_IN"].ToString()) ? null : (DateTime?)row["NGAY_IN"],
+                                    ngay_duyet = string.IsNullOrEmpty(row["NGAY_DUYET"].ToString()) ? null : (DateTime?)row["NGAY_DUYET"],
+                                    ngay_htra = string.IsNullOrEmpty(row["NGAY_HTRA"].ToString()) ? null : (DateTime?)row["NGAY_HTRA"],
+                                    ngay_ht = string.IsNullOrEmpty(row["NGAY_HT"].ToString()) ? null : (DateTime?)row["NGAY_HT"],
+                                    ly_do = row["LY_DO"].ToString(),
+                                    //NGAY_DK1 = string.IsNullOrEmpty(row["NGAY_DK1"].ToString()) ? null : (DateTime?)row["NGAY_DK1"],
+                                    //TG_DI1 = string.IsNullOrEmpty(row["TG_DI1"].ToString()) ? null : (DateTime?)row["TG_DI1"],
+                                    //TG_VE1 = string.IsNullOrEmpty(row["TG_VE1"].ToString()) ? null : (DateTime?)row["TG_VE1"],
+                                    ngay_dk1 = row["NGAY_DK1"].ToString(),
+                                    tg_di1 = row["TG_DI1"].ToString(),
+                                    tg_ve1 = row["TG_VE1"].ToString(),
+                                    ten_ttht = row["TEN_TTHT"].ToString(),
+                                    ten_dk = row["TEN_DK"].ToString(),
+                                    ten_nd = row["TEN_ND"].ToString(),
+                                    so_xe = row["SO_XE"].ToString(),
+                                    kmdi1 = row["KMDI1"].ToString(),
+                                    ten_tx = row["TEN_TX"].ToString(),
+                                    sdt_tx= row["SDT_TX"].ToString(),
+                                    donvi_id = row["DONVI_ID"].ToString(),
+                                    ten_donvi_con = row["TEN_DONVI_CON"].ToString(),
+                                    ten_loai_ht = row["TEN_LOAI_HT"].ToString(),
+                                    ngay_in1= row["NGAY_IN1"].ToString()
+                                }).ToList();
+                return Json(journeyInfos);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        [HttpPost]
+        [Route("laydanhsachhanhtrinhTheoTaiXe")]
+        public IHttpActionResult getListJourneyByDriverId([FromBody]GetListJourneyByUserIdViewModel getListJourneyByUserIdViewModel)
+        {
+            try
+            {
+                List<JourneyInfo> journeyInfos = new List<JourneyInfo>();
+                DataTable dt = getListJourneyByDriverIdOrcl(getListJourneyByUserIdViewModel);
+                //List<DataRow> dataRows = new List<DataRow>(dt.Select());
+                journeyInfos = (from DataRow row in dt.Rows
+                                select new JourneyInfo
+                                {
+                                    id = int.Parse(row["ID"].ToString()),
+                                    xe = row["XE"].ToString(),
+                                    tai_xe = row["TAI_XE"].ToString(),
+                                    ngay_dk = string.IsNullOrEmpty(row["NGAY_DK"].ToString()) ? null : (DateTime?)row["NGAY_DK"],
+                                    muc_dich = row["MUC_DICH"].ToString(),
+                                    noi_di = row["NOI_DI"].ToString(),
+                                    noi_den = row["NOI_DEN"].ToString(),
+                                    tg_di = string.IsNullOrEmpty(row["TG_DI"].ToString()) ? null : (DateTime?)row["TG_DI"],
+                                    tg_ve = string.IsNullOrEmpty(row["TG_VE"].ToString()) ? null : (DateTime?)row["TG_VE"],
+                                    gio_xuat_phat = row["GIO_XUAT_PHAT"].ToString(),
+                                    km_di = row["KM_DI"].ToString(),
+                                    km_ve = row["KM_VE"].ToString(),
+                                    tg_cau = row["TG_CAU"].ToString(),
+                                    so_nguoi = row["SO_NGUOI"].ToString(),
+                                    user_dk = row["USER_DK"].ToString(),
+                                    user_duyet = row["USER_DUYET"].ToString(),
+                                    trang_thai = row["TRANG_THAI"].ToString(),
+                                    loai_ht = row["LOAI_HT"].ToString(),
+                                    ngay_in = string.IsNullOrEmpty(row["NGAY_IN"].ToString()) ? null : (DateTime?)row["NGAY_IN"],
+                                    ngay_duyet = string.IsNullOrEmpty(row["NGAY_DUYET"].ToString()) ? null : (DateTime?)row["NGAY_DUYET"],
+                                    ngay_htra = string.IsNullOrEmpty(row["NGAY_HTRA"].ToString()) ? null : (DateTime?)row["NGAY_HTRA"],
+                                    ngay_ht = string.IsNullOrEmpty(row["NGAY_HT"].ToString()) ? null : (DateTime?)row["NGAY_HT"],
+                                    ly_do = row["LY_DO"].ToString(),
+                                    //NGAY_DK1 = string.IsNullOrEmpty(row["NGAY_DK1"].ToString()) ? null : (DateTime?)row["NGAY_DK1"],
+                                    //TG_DI1 = string.IsNullOrEmpty(row["TG_DI1"].ToString()) ? null : (DateTime?)row["TG_DI1"],
+                                    //TG_VE1 = string.IsNullOrEmpty(row["TG_VE1"].ToString()) ? null : (DateTime?)row["TG_VE1"],
+                                    ngay_dk1 = row["NGAY_DK1"].ToString(),
+                                    tg_di1 = row["TG_DI1"].ToString(),
+                                    tg_ve1 = row["TG_VE1"].ToString(),
+                                    ten_ttht = row["TEN_TTHT"].ToString(),
+                                    ten_dk = row["TEN_DK"].ToString(),
+                                    ten_nd = row["TEN_ND"].ToString(),
+                                    so_xe = row["SO_XE"].ToString(),
+                                    kmdi1 = row["KMDI1"].ToString(),
+                                    ten_tx = row["TEN_TX"].ToString(),
+                                    sdt_tx = row["SDT_TX"].ToString(),
+                                    donvi_id = row["DONVI_ID"].ToString(),
+                                    ten_donvi_con = row["TEN_DONVI_CON"].ToString(),
+                                    ten_loai_ht = row["TEN_LOAI_HT"].ToString(),
+                                    ngay_in1 = row["NGAY_IN1"].ToString()
+                                }).ToList();
+                return Json(journeyInfos);
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -538,6 +717,50 @@ namespace API_QLXE.Controllers
                 }
             }
             catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public DataTable getListJourneyWaitApprovingByUserIdOrcl(string dv)
+        {
+            try
+            {
+                using (OracleConnection cn = new OracleConnection(connstring))
+                {
+                    OracleCommand cmd = new OracleCommand("HANHTRINHXE.GetCngridhtdvidk", cn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("dv", OracleDbType.Varchar2).Value = dv;
+                    cmd.Parameters.Add("Param1", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+                    OracleDataAdapter da = new OracleDataAdapter(cmd);
+                    DataTable d = new DataTable();
+                    da.Fill(d);
+                    return d;
+                }
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public DataTable getListJourneyByDriverIdOrcl(GetListJourneyByUserIdViewModel getListJourneyByUserIdViewModel)
+        {
+            try
+            {
+                using (OracleConnection cn = new OracleConnection(connstring))
+                {
+                    OracleCommand cmd = new OracleCommand("HANHTRINHXE.GetCngridhtdvidk", cn);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("tx", OracleDbType.Varchar2).Value = getListJourneyByUserIdViewModel.userdk;
+                    cmd.Parameters.Add("dv", OracleDbType.Varchar2).Value = getListJourneyByUserIdViewModel.dv;
+                    cmd.Parameters.Add("Param1", OracleDbType.RefCursor).Direction = ParameterDirection.Output;
+                    OracleDataAdapter da = new OracleDataAdapter(cmd);
+                    DataTable d = new DataTable();
+                    da.Fill(d);
+                    return d;
+                }
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }
